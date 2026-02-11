@@ -32,11 +32,7 @@
             </div>
 
             <button id="joinBtn" class="btn btn-primary w-100">Join Chat Room</button>
-
-            <!-- ✅ NEW BUTTON -->
-            <button id="privateBtn" class="btn btn-outline-primary w-100 mt-2">
-              Private Chat
-            </button>
+            <button id="privateBtn" class="btn btn-outline-primary w-100 mt-2">Private Chat</button>
           </div>
         </div>
 
@@ -46,11 +42,8 @@
   </div>
 
   <script>
-    // ✅ session check
     const userRaw = localStorage.getItem("chat_user");
-    if (!userRaw) {
-      window.location.href = "./login.html";
-    }
+    if (!userRaw) window.location.href = "./login.html";
 
     const user = JSON.parse(userRaw);
     document.getElementById("welcomeText").textContent = `Welcome, ${user.username}`;
@@ -67,7 +60,6 @@
       window.location.href = "./chat.html";
     });
 
-    // ✅ private chat navigation
     document.getElementById("privateBtn").addEventListener("click", () => {
       window.location.href = "./private.html";
     });
