@@ -5,6 +5,8 @@ const http = require("http");
 const { Server } = require("socket.io");
 const morgan = require("morgan");
 const authRoutes = require("./routes/authRoutes");
+const path = require("path");
+
 
 const connectDB = require("./config/db");
 
@@ -15,6 +17,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(express.static(path.join(__dirname, "..", "view")));
 
 app.use("/api/auth", authRoutes);
 
