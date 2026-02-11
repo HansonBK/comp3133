@@ -4,8 +4,10 @@ const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
 const morgan = require("morgan");
+const authRoutes = require("./routes/authRoutes");
 
 const connectDB = require("./config/db");
+
 
 dotenv.config();
 
@@ -13,6 +15,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
+
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("Chat Server Running ✅");
