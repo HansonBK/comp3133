@@ -47,7 +47,7 @@
     </div>
   </div>
 
-  <!-- socket.io client from your server -->
+  <!-- socket.io client -->
   <script src="/socket.io/socket.io.js"></script>
 
   <script>
@@ -59,7 +59,8 @@
     if (!room) window.location.href = "./rooms.html";
 
     const user = JSON.parse(userRaw);
-    document.getElementById("roomInfo").textContent = `Room: ${room} | User: ${user.username}`;
+    document.getElementById("roomInfo").textContent =
+      `Room: ${room} | User: ${user.username}`;
 
     const chatBox = document.getElementById("chatBox");
     const msgInput = document.getElementById("message");
@@ -104,11 +105,17 @@
     // ✅ join room
     socket.emit("join_room", { room, username: user.username });
 
+    // ✅ load history (sent only to this client)
+    socket.on("room_history", (messages) => {
+      chatBox.innerHTML = "";
+      messages.forEach((m) => addMessage(m));
+    });
+
+    // ✅ receive new messages
     socket.on("room_message", (payload) => {
       addMessage(payload);
     });
 
-    // send message
     function sendMessage() {
       const text = msgInput.value.trim();
       if (!text) return;
@@ -124,19 +131,19 @@
     }
 
     document.getElementById("sendBtn").addEventListener("click", sendMessage);
+
     msgInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") sendMessage();
       socket.emit("typing", { room, username: user.username });
     });
 
-    // leave room
     document.getElementById("leaveBtn").addEventListener("click", () => {
       socket.emit("leave_room", { room, username: user.username });
       localStorage.removeItem("chat_room");
       window.location.href = "./rooms.html";
     });
 
-    // typing indicator (room-wide)
+    // typing indicator
     let typingTimer;
     socket.on("typing", ({ username }) => {
       if (username === user.username) return;

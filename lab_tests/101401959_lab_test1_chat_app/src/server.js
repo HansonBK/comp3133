@@ -4,12 +4,12 @@ const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
 const morgan = require("morgan");
-const authRoutes = require("./routes/authRoutes");
 const path = require("path");
 
-
+const authRoutes = require("./routes/authRoutes");
 const connectDB = require("./config/db");
 
+const GroupMessage = require("./models/GroupMessage");
 
 dotenv.config();
 
@@ -17,8 +17,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
+
+// ✅ serve frontend HTML files
 app.use(express.static(path.join(__dirname, "..", "view")));
 
+// ✅ routes
 app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
@@ -30,20 +33,29 @@ const server = http.createServer(app);
 
 // socket.io setup
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
+  cors: { origin: "*" },
 });
 
-// socket test
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("join_room", ({ room, username }) => {
+  // ✅ Join room + send history
+  socket.on("join_room", async ({ room, username }) => {
     socket.join(room);
     console.log(`${username} joined room: ${room}`);
 
-    // optional join notification
+    // send room history ONLY to this user
+    try {
+      const history = await GroupMessage.find({ room })
+        .sort({ _id: 1 })
+        .limit(50);
+
+      socket.emit("room_history", history);
+    } catch (err) {
+      console.error("History load error:", err.message);
+    }
+
+    // optional join notification (NOT saved)
     io.to(room).emit("room_message", {
       from_user: "System",
       message: `${username} joined the room`,
@@ -51,6 +63,7 @@ io.on("connection", (socket) => {
     });
   });
 
+  // ✅ Leave room
   socket.on("leave_room", ({ room, username }) => {
     socket.leave(room);
     console.log(`${username} left room: ${room}`);
@@ -62,11 +75,24 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("send_room_message", (payload) => {
+  // ✅ Save to MongoDB + broadcast
+  socket.on("send_room_message", async (payload) => {
     // payload: { room, from_user, message, date_sent }
+    try {
+      await GroupMessage.create({
+        from_user: payload.from_user,
+        room: payload.room,
+        message: payload.message,
+        date_sent: payload.date_sent,
+      });
+    } catch (err) {
+      console.error("Save message error:", err.message);
+    }
+
     io.to(payload.room).emit("room_message", payload);
   });
 
+  // ✅ typing indicator
   socket.on("typing", ({ room, username }) => {
     socket.to(room).emit("typing", { username });
   });
@@ -76,9 +102,10 @@ io.on("connection", (socket) => {
   });
 });
 
-
 // connect MongoDB
 connectDB();
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+server.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`)
+);
