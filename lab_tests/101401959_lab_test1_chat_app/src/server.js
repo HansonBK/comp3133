@@ -39,10 +39,43 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
+  socket.on("join_room", ({ room, username }) => {
+    socket.join(room);
+    console.log(`${username} joined room: ${room}`);
+
+    // optional join notification
+    io.to(room).emit("room_message", {
+      from_user: "System",
+      message: `${username} joined the room`,
+      date_sent: new Date().toLocaleString(),
+    });
+  });
+
+  socket.on("leave_room", ({ room, username }) => {
+    socket.leave(room);
+    console.log(`${username} left room: ${room}`);
+
+    io.to(room).emit("room_message", {
+      from_user: "System",
+      message: `${username} left the room`,
+      date_sent: new Date().toLocaleString(),
+    });
+  });
+
+  socket.on("send_room_message", (payload) => {
+    // payload: { room, from_user, message, date_sent }
+    io.to(payload.room).emit("room_message", payload);
+  });
+
+  socket.on("typing", ({ room, username }) => {
+    socket.to(room).emit("typing", { username });
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
 });
+
 
 // connect MongoDB
 connectDB();
