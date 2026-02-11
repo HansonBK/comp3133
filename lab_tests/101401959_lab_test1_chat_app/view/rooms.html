@@ -32,6 +32,11 @@
             </div>
 
             <button id="joinBtn" class="btn btn-primary w-100">Join Chat Room</button>
+
+            <!-- ✅ NEW BUTTON -->
+            <button id="privateBtn" class="btn btn-outline-primary w-100 mt-2">
+              Private Chat
+            </button>
           </div>
         </div>
 
@@ -60,6 +65,11 @@
       const room = document.getElementById("room").value;
       localStorage.setItem("chat_room", room);
       window.location.href = "./chat.html";
+    });
+
+    // ✅ private chat navigation
+    document.getElementById("privateBtn").addEventListener("click", () => {
+      window.location.href = "./private.html";
     });
   </script>
 </body>
