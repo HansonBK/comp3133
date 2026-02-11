@@ -11,6 +11,9 @@ const connectDB = require("./config/db");
 
 const GroupMessage = require("./models/GroupMessage");
 
+const PrivateMessage = require("./models/PrivateMessage");
+
+
 dotenv.config();
 
 const app = express();
@@ -91,6 +94,39 @@ io.on("connection", (socket) => {
 
     io.to(payload.room).emit("room_message", payload);
   });
+
+
+  // ✅ load private history between 2 users
+socket.on("load_private_history", async ({ from_user, to_user }) => {
+  try {
+    const history = await PrivateMessage.find({
+      $or: [
+        { from_user, to_user },
+        { from_user: to_user, to_user: from_user }
+      ]
+    })
+      .sort({ _id: 1 })
+      .limit(50);
+
+    socket.emit("private_history", history);
+  } catch (err) {
+    console.error("Private history error:", err.message);
+  }
+});
+
+// ✅ send private message (save + emit to both sender and receiver)
+socket.on("send_private_message", async (payload) => {
+  // payload: { from_user, to_user, message, date_sent }
+  try {
+    await PrivateMessage.create(payload);
+  } catch (err) {
+    console.error("Save private message error:", err.message);
+  }
+
+  // send to receiver + sender (so both see it)
+  io.emit("private_message", payload);
+});
+
 
   // ✅ typing indicator
   socket.on("typing", ({ room, username }) => {
