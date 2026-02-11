@@ -28,8 +28,9 @@ app.use(express.static(path.join(__dirname, "..", "view")));
 app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Chat Server Running ✅");
+  res.redirect("/login.html");
 });
+
 
 // create server for socket.io
 const server = http.createServer(app);
