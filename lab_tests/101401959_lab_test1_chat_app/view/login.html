@@ -68,16 +68,11 @@
 
         const data = await res.json();
 
-        if (!res.ok) {
-          return showMessage(data.message || "Login failed");
-        }
+        if (!res.ok) return showMessage(data.message || "Login failed");
 
-        // ✅ session storage requirement (localStorage)
         localStorage.setItem("chat_user", JSON.stringify(data.user));
-
         showMessage("Login successful! Redirecting...", "success");
-        // next page later: join room
-        setTimeout(() => window.location.href = "./rooms.html", 800);
+        setTimeout(() => window.location.href = "./rooms.html", 700);
 
       } catch (err) {
         showMessage("Server not reachable. Is backend running?");

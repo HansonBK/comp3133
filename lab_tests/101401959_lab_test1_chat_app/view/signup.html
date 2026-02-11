@@ -80,10 +80,7 @@
 
         const data = await res.json();
 
-        if (!res.ok) {
-          return showMessage(data.message || "Signup failed");
-        }
-
+        if (!res.ok) return showMessage(data.message || "Signup failed");
         showMessage("Signup successful! Redirecting to login...", "success");
         setTimeout(() => window.location.href = "./login.html", 800);
 
