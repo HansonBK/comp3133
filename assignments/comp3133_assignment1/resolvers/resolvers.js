@@ -3,6 +3,48 @@ import User from '../models/User.js';
 import Employee from '../models/Employee.js';
 import { uploadEmployeePhoto } from '../config/cloudinary.js';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const GENDERS = new Set(['Male', 'Female', 'Other']);
+
+const requireFields = (obj, fields) => {
+  const missing = fields.filter((field) => !obj[field]);
+  if (missing.length > 0) {
+    throw new Error(`Missing required fields: ${missing.join(', ')}`);
+  }
+};
+
+const validateEmail = (email) => {
+  if (email && !EMAIL_REGEX.test(email)) {
+    throw new Error('Invalid email format');
+  }
+};
+
+const validateEmployeeInput = (input, { partial = false } = {}) => {
+  if (!partial) {
+    requireFields(input, [
+      'first_name',
+      'last_name',
+      'email',
+      'gender',
+      'designation',
+      'salary',
+      'date_of_joining',
+      'department'
+    ]);
+  }
+
+  if (input.email) validateEmail(input.email);
+  if (input.gender && !GENDERS.has(input.gender)) {
+    throw new Error('Gender must be Male, Female, or Other');
+  }
+  if (input.salary !== undefined && Number(input.salary) < 1000) {
+    throw new Error('Salary must be >= 1000');
+  }
+  if (input.date_of_joining && Number.isNaN(Date.parse(input.date_of_joining))) {
+    throw new Error('date_of_joining must be a valid date');
+  }
+};
+
 const resolvers = {
   Query: {
     login: async (_, { usernameOrEmail, password }) => {
@@ -49,6 +91,8 @@ const resolvers = {
   },
   Mutation: {
     signup: async (_, { username, email, password }) => {
+      requireFields({ username, email, password }, ['username', 'email', 'password']);
+      validateEmail(email);
       const existingUser = await User.findOne({
         $or: [{ username }, { email }]
       });
@@ -78,6 +122,7 @@ const resolvers = {
       };
     },
     addEmployee: async (_, args) => {
+      validateEmployeeInput(args);
       const {
         first_name,
         last_name,
@@ -112,6 +157,10 @@ const resolvers = {
       return employee;
     },
     updateEmployeeByEid: async (_, { eid, ...updates }) => {
+      if (!eid) {
+        throw new Error('eid is required');
+      }
+      validateEmployeeInput(updates, { partial: true });
       if (updates.employee_photo) {
         const photoUrl = await uploadEmployeePhoto(updates.employee_photo);
         updates.employee_photo = photoUrl;
