@@ -10,7 +10,7 @@ const employeeSchema = new mongoose.Schema(
     salary: { type: Number, required: true, min: 1000 },
     date_of_joining: { type: Date, required: true },
     department: { type: String, required: true },
-    employee_photo: { type: String }
+    employee_photo: { type: String }, // store URL/path from Cloudinary
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );

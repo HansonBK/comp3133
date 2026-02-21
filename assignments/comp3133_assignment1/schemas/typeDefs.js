@@ -1,86 +1,97 @@
+const { gql } = require("graphql-tag");
 
+module.exports = gql`
+  scalar Date
 
-const typeDefs=`
+  type User {
+    _id: ID!
+    username: String!
+    email: String!
+    created_at: Date
+    updated_at: Date
+  }
 
-    type User{
-        _id: ID!
-        username: String!
-        email: String!
-        password: String!
-        created_at: String
-        updated_at: String
-    }
-    type Employee{
-        _id: ID!
-        first_name: String!
-        last_name: String!
-        email: String!
-        gender: String!
-        designation: String!
-        salary: Float!
-        date_of_joining: String!
-        department: String!
-        employee_photo: String
-        created_at: String
-        updated_at: String
-    }
-
-    type Query {
-        login(usernameOrEmail: String!, password: String!): AuthPayload!
-        getAllEmployees : [Employee!]!
-        searchEmployeeByEid(eid:ID!):Employee
-        searchEmployeesByDesignationOrDepartment(designation: String, department: String): [Employee!]!
-
-    }
-
-
-    type Mutation {
-  signup(username: String!, email: String!, password: String!): AuthPayload!
-
-  addEmployee(
+  type Employee {
+    _id: ID!
     first_name: String!
     last_name: String!
     email: String!
-    gender: String!
+    gender: String
     designation: String!
     salary: Float!
-    date_of_joining: String!
+    date_of_joining: Date!
     department: String!
     employee_photo: String
-  ): Employee!
+    created_at: Date
+    updated_at: Date
+  }
 
-  updateEmployeeByEid(
-    eid: ID!
+  type AuthPayload {
+    success: Boolean!
+    message: String!
+    token: String
+    user: User
+  }
+
+  type EmployeePayload {
+    success: Boolean!
+    message: String!
+    employee: Employee
+  }
+
+  type EmployeesPayload {
+    success: Boolean!
+    message: String!
+    employees: [Employee!]!
+  }
+
+  input SignupInput {
+    username: String!
+    email: String!
+    password: String!
+  }
+
+  input LoginInput {
+    # user can login using username OR email + password
+    usernameOrEmail: String!
+    password: String!
+  }
+
+  input EmployeeInput {
+    first_name: String!
+    last_name: String!
+    email: String!
+    gender: String
+    designation: String!
+    salary: Float!
+    date_of_joining: Date!
+    department: String!
+    employee_photo: String
+  }
+
+  input EmployeeUpdateInput {
     first_name: String
     last_name: String
     email: String
     gender: String
     designation: String
     salary: Float
-    date_of_joining: String
+    date_of_joining: Date
     department: String
     employee_photo: String
-  ): Employee
+  }
 
-  deleteEmployeeByEid(eid: ID!): ApiResponse!
-}
+  type Query {
+    login(input: LoginInput!): AuthPayload!
+    getAllEmployees: EmployeesPayload!
+    getEmployeeByEid(eid: ID!): EmployeePayload!
+    searchEmployees(designation: String, department: String): EmployeesPayload!
+  }
 
-
-    type ApiResponse { 
-        status: Boolean!, 
-        message: String!, 
-        error: String, 
-        data: String 
-    }
-
-    type AuthPayload { 
-        status: Boolean!, 
-        message: String!, 
-        error: String, 
-        token: String, 
-        user: User 
-    }
-
+  type Mutation {
+    signup(input: SignupInput!): AuthPayload!
+    addEmployee(input: EmployeeInput!): EmployeePayload!
+    updateEmployeeByEid(eid: ID!, input: EmployeeUpdateInput!): EmployeePayload!
+    deleteEmployeeByEid(eid: ID!): EmployeePayload!
+  }
 `;
-
-export default typeDefs;
