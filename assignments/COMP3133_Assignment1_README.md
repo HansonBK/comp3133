@@ -118,15 +118,6 @@ MongoDB Compass was used to verify:
 
 ------------------------------------------------------------------------
 
-## Submission Contents
-
--   Source Code
--   Postman Collection
--   Postman Environment
--   Screenshots of API responses
--   MongoDB Compass proof
--   This README file
-
 ------------------------------------------------------------------------
 
 ## Author
