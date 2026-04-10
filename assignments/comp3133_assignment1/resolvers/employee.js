@@ -1,7 +1,14 @@
 const Employee = require("../models/Employee");
 const { requireAuth } = require("../utils/auth");
 
+function isEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 function validateEmployeeInput(input) {
+  if (input.email != null && !isEmail(input.email)) {
+    return "Invalid email format.";
+  }
   if (input.salary != null && input.salary < 1000) {
     return "Salary must be >= 1000.";
   }
@@ -32,10 +39,10 @@ module.exports = {
       requireAuth(context);
 
       const filter = {};
-      if (designation) filter.designation = designation;
-      if (department) filter.department = department;
+      if (designation) filter.designation = { $regex: designation, $options: "i" };
+      if (department) filter.department = { $regex: department, $options: "i" };
 
-      const employees = await Employee.find(filter);
+      const employees = await Employee.find(filter).sort({ created_at: -1 });
       return { success: true, message: "Employees fetched.", employees };
     },
   },
@@ -48,10 +55,12 @@ module.exports = {
       if (error) return { success: false, message: error, employee: null };
 
       try {
-        const employee = await Employee.create(input);
+        const employee = await Employee.create({
+          ...input,
+          email: input.email.toLowerCase(),
+        });
         return { success: true, message: "Employee created.", employee };
       } catch (e) {
-        // Unique email conflict, etc.
         return { success: false, message: e.message, employee: null };
       }
     },
@@ -63,7 +72,14 @@ module.exports = {
       if (error) return { success: false, message: error, employee: null };
 
       try {
-        const employee = await Employee.findByIdAndUpdate(eid, input, { new: true });
+        const payload = {
+          ...input,
+          ...(input.email ? { email: input.email.toLowerCase() } : {}),
+        };
+        const employee = await Employee.findByIdAndUpdate(eid, payload, {
+          new: true,
+          runValidators: true,
+        });
         if (!employee) return { success: false, message: "Employee not found.", employee: null };
         return { success: true, message: "Employee updated.", employee };
       } catch (e) {

@@ -74,5 +74,12 @@ module.exports = {
         user,
       };
     },
+
+    logout: async () => {
+      return {
+        success: true,
+        message: "Logout successful.",
+      };
+    },
   },
 };

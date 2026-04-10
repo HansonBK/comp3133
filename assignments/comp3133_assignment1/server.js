@@ -16,11 +16,9 @@ dotenv.config();
 async function start() {
   const app = express();
 
-  
   app.use(cors());
   app.use(express.json());
 
-  // ---------- REST endpoint for uploading employee photo to Cloudinary ----------
   const upload = multer({ storage: multer.memoryStorage() });
 
   app.post("/upload", upload.single("photo"), async (req, res) => {
@@ -48,7 +46,6 @@ async function start() {
     }
   });
 
-  // ---------- GraphQL / Apollo ----------
   const apolloServer = new ApolloServer({
     typeDefs: schema.typeDefs,
     resolvers: schema.resolvers,
@@ -56,10 +53,10 @@ async function start() {
 
   await apolloServer.start();
 
-  
   app.use(
-    "/graphql",
-    expressMiddleware(apolloServer, {
+  "/graphql",
+  express.json(),
+  expressMiddleware(apolloServer, {
       context: async ({ req }) => {
         const user = getUserFromAuthHeader(req.headers.authorization);
         return { user };
@@ -67,7 +64,6 @@ async function start() {
     })
   );
 
-  // Connect DB then start server
   await connectDB();
 
   const PORT = process.env.PORT || 4000;

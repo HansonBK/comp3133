@@ -33,6 +33,11 @@ module.exports = gql`
     user: User
   }
 
+  type BasicPayload {
+    success: Boolean!
+    message: String!
+  }
+
   type EmployeePayload {
     success: Boolean!
     message: String!
@@ -52,7 +57,6 @@ module.exports = gql`
   }
 
   input LoginInput {
-    # user can login using username OR email + password
     usernameOrEmail: String!
     password: String!
   }
@@ -90,6 +94,7 @@ module.exports = gql`
 
   type Mutation {
     signup(input: SignupInput!): AuthPayload!
+    logout: BasicPayload!
     addEmployee(input: EmployeeInput!): EmployeePayload!
     updateEmployeeByEid(eid: ID!, input: EmployeeUpdateInput!): EmployeePayload!
     deleteEmployeeByEid(eid: ID!): EmployeePayload!
