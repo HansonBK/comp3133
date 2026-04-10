@@ -27,7 +27,7 @@ export const appConfig: ApplicationConfig = {
       });
 
       return {
-        link: authLink.concat(httpLink.create({ uri: 'http://localhost:4000/graphql' })),
+        link: authLink.concat(httpLink.create({ uri: 'https://comp3133-dyyu.onrender.com/graphql' })),
         cache: new InMemoryCache(),
       };
     }),

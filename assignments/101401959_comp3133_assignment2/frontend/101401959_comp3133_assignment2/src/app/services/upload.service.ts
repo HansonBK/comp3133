@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators';
 })
 export class UploadService {
   private readonly http = inject(HttpClient);
-  private readonly uploadUrl = 'http://localhost:4000/upload';
+  private readonly uploadUrl = 'https://comp3133-dyyu.onrender.com/upload';
 
   uploadPhoto(file: File) {
     const formData = new FormData();
